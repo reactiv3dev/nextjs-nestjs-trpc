@@ -1,5 +1,6 @@
 # nextjs-nestjs-trpc
 
+I **love** using [Next.js](https://nextjs.org/), [Nest.js](https://nestjs.com), and in this boilerplate I will make monorepo with [tRPC](https://trpc.io)
 
 ## MONOREPO SETUP
 1. Initialize project with pnpm:
@@ -247,4 +248,37 @@ async function bootstrap() {
   await app.listen(4000);
 }
 bootstrap();
+```
+
+- To enable tRPC on `frontend` we need to install next packages:
+```
+pnpm add @trpc/server @trpc/client --filter=client
+```
+
+- in `lib` or in `app` folder make `trpc.ts` file where you will initialize trpc client:
+> .client/app/trpc.ts
+```
+import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import { AppRouter } from "@server/trpc/trpc.router";
+
+export const trpc = createTRPCProxyClient<AppRouter>({
+    links: [
+        httpBatchLink({ url: "http://localhost:5000/trpc"}) // TODO: use env var
+    ]
+});
+```
+* `AppRouter` is type that is common to backend and frontend and it keeps all types that are shareable betweeen the two as contract.
+
+- Usage is simple as:
+```
+import { trpc } from "./trpc";
+
+export default async function Home() {
+
+  const response = await trpc.hello.query({});
+  return <main>
+    <h2>{response}</h2>
+  </main>
+}
+
 ```
